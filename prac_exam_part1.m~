@@ -1,0 +1,440 @@
+close all;
+clear;
+im = imread("IMG_3555.jpg");
+
+%1
+test_img = imread("IMG_3558.jpg");
+
+%red
+R_t=test_img(:,:,1);
+Rnormal_t=double(R_t)/255;
+
+%Green
+G_t=test_img(:,:,2);
+Gnormal_t=double(G_t)/255;
+
+%Blue
+B_t=test_img(:,:,3);
+Bnormal_t=double(B_t)/255;
+
+imR = Rnormal_t.^2.5;
+imG = Gnormal_t.^2.5;
+imB = Bnormal_t.^2.5;
+
+
+imr=imR./(imR+imG+imB);
+img=imG./(imR+imG+imB);
+
+imrThings_t =imr>0.5;
+imgThings_t =img>0.5;
+imrThings_t = imopen(imrThings_t, strel('square', 9));
+imgThings_t = imopen(imgThings_t, strel('square', 9));
+idisp(imrThings_t + imgThings_t);
+
+r_t = iblobs(imrThings_t, 'area',[600, 1200000], 'boundary', 'touch', 0);
+g_t = iblobs(imgThings_t, 'area',[600, 1200000], 'boundary', 'touch', 0);
+
+res = [""];
+for i=1:length(r_t)
+    if r_t(i).area > 430000
+        s="large";
+    else
+        s="small";
+    end
+    if r_t(i).circularity > 0.95        
+        fprintf('Red shape ID %d is a Circle and area is %d and the size is ' + s +'\n', i, r_t(i).area);
+        res(1, 1) = s;
+        res(1, 2) = 'Red';
+        res(1, 3) = 'Circle';
+    elseif r_t(i).circularity > 0.7
+        fprintf('Red shape ID %d is a Square and area is %d and the size is ' + s +'\n', i, r_t(i).area);
+        res(2, 1) = s;
+        res(2, 2) = 'Red';
+        res(2, 3) = 'Square';
+    elseif r_t(i).circularity > 0.55
+        fprintf('Red shape ID %d is a Triangle and area is %d and the size is ' + s+'\n', i, r_t(i).area);
+        res(3, 1) = s;
+        res(3, 2) = 'Red';
+        res(3, 3) = 'Triangle';
+    else
+        fprintf('Red shape ID %d is of an unknown type\n', i);
+    end
+end
+
+
+for i=1:length(g_t)
+    if g_t(i).area > 430000
+        s="large";
+    else
+        s="small";
+    end
+    if g_t(i).circularity > 0.9
+        fprintf('Green shape ID %d is a Circle and area is %d and the size is ' + s +'\n', i, g_t(i).area);
+        res(4, 1) = s;
+        res(4, 2) = 'Green';
+        res(4, 3) = 'Circle';
+    elseif g_t(i).circularity > 0.7
+        fprintf('Green shape ID %d is a Square and area is %d and the size is ' + s +'\n', i, g_t(i).area);
+        res(5, 1) = s;
+        res(5, 2) = 'Green';
+        res(5, 3) = 'Square';
+    elseif g_t(i).circularity > 0.55
+        fprintf('Green shape ID %d is a Triangle and area is %d and the size is ' + s +'\n', i, g_t(i).area);
+        res(6, 1) = s;
+        res(6, 2) = 'Green';
+        res(6, 3) = 'Triangle';
+    else
+        fprintf('Green shape ID %d is of an unknown type\n', i);
+    end
+end
+res = rmmissing(res);
+pause;
+
+
+
+
+%---------------------------------------------------------
+%rotated_im = imrotate(im, 90*3); 
+
+%red
+R=im(:,:,1);
+Rnormal=double(R)/255;
+
+%Green
+G=im(:,:,2);
+Gnormal=double(G)/255;
+
+%Blue
+B=im(:,:,3);
+Bnormal=double(B)/255;
+
+imR = Rnormal.^2.5;
+imG = Gnormal.^2.5;
+imB = Bnormal.^2.5;
+
+imr=imR./(imR+imG+imB);
+imb=imB./(imR+imG+imB);
+img=imG./(imR+imG+imB);
+
+imrThings =imr>0.5;
+imrThings = imopen(imrThings, strel('square', 10));
+imbThings =imb>0.5;
+imbThings = imopen(imbThings, strel('square', 10));
+imgThings =img>0.5;
+imgThings = imopen(imgThings, strel('square', 10));
+
+
+
+
+
+r = iblobs(imrThings, 'area',[700, 1200000], 'boundary', 'touch', 0);
+
+b = iblobs(imbThings,'area',[700, 1200000], 'boundary', 'touch', 0);
+
+g = iblobs(imgThings,'area',[700, 1200000], 'boundary', 'touch', 0);
+
+%QUESTION 2.)
+figure()
+imshow(imbThings);
+
+[L2, nr2] = ilabel(imbThings);
+idisp(imbThings);
+
+for i=1:length(b)
+    b(i).plot_box('b');
+    b(i).plot('r*');
+end
+
+%red objects
+%figure()
+%imshow(imrThings);
+%[L, nr] = ilabel(imrThings);
+
+%Question 3
+
+figure()
+idisp(imrThings + imgThings);
+for i=1:length(r)
+    %r(i).plot_box('g');
+    if(r(i).circularity > 0.55 && r(i).circularity < 0.7)
+        r(i).plot_box('r');
+    end
+    r(i).plot('r*');
+end
+
+%[L3, nr3] = ilabel(imgThings);
+%idisp(imgThings);
+for i=1:length(g)
+    g(i).plot_box('g');
+    if(g(i).circularity > 0.55 && g(i).circularity < 0.7)
+        g(i).plot_box('r--');
+    end
+    g(i).plot('r*');
+end
+
+
+
+%{
+for i=1:length(b)
+    if b(i).circularity > 0.9
+        fprintf('Blue shape ID %d is a Circle and area is %d\n', i, b(i).area);
+    elseif b(i).circularity > 0.7
+        fprintf('Blue shape ID %d is a Square and area is %d\n', i, b(i).area);
+    elseif b(i).circularity > 0.55
+        fprintf('Blue shape ID %d is a Triangle and area is %d\n', i, b(i).area);
+    else
+        fprintf('Blue shape ID %d is of an unknown type\n', i);
+    end
+end
+
+for i=1:length(r)
+    if r(i).circularity > 0.95
+        fprintf('Red shape ID %d is a Circle and area is %d\n', i, r(i).area);
+    elseif r(i).circularity > 0.7
+        fprintf('Red shape ID %d is a Square and area is %d\n', i, r(i).area);
+    elseif r(i).circularity > 0.55
+        fprintf('Red shape ID %d is a Triangle and area is %d\n', i, r(i).area);
+    else
+        fprintf('Red shape ID %d is of an unknown type\n', i);
+    end
+end
+
+
+for i=1:length(g)
+    if g(i).circularity > 0.9
+        fprintf('Green shape ID %d is a Circle and area is %d\n', i, g(i).area);
+    elseif g(i).circularity > 0.7
+        fprintf('Green shape ID %d is a Square and area is %d\n', i, g(i).area);
+    elseif g(i).circularity > 0.55
+        fprintf('Green shape ID %d is a Triangle and area is %d\n', i, g(i).area);
+    else
+        fprintf('Green shape ID %d is of an unknown type\n', i);
+    end
+end
+%}
+
+
+%QUESTION 5
+%order is 3, 1, 2, 4, 5, 6, 8, 7, 9 (left to right top to bottom is 1 to 9)
+Pb = [];
+for i=1:length(b)
+ Pb(1,i) = b(i).uc;
+ Pb(2,i) = b(i).vc;
+end
+
+Q = [380 380; 20 380; 200 380; 20 200; 200 200; 200 20; 380 200; 20 20; 380 20];
+
+H = homography(Pb, Q');
+
+
+%QUESTION 4
+allThings = imrThings + imgThings;
+figure();
+idisp(allThings);
+maybe = zeros(2760, 2678);
+for i=1:length(r)
+    color="Red";
+    %r(i).plot('r*');
+    if r(i).circularity > 0.95
+        if r(i).area > 65000
+            s="large";
+        else
+            s="small";
+        end
+        
+        shape="Circle";
+        if(s==res(1,1) && color==res(1,2) && shape==res(1,3))
+            r(i).plot('r*');
+            r(i).plot_box('r');
+            maybe(r(i).vmin:r(i).vmax, r(i).umin:r(i).umax) = imrThings(r(i).vmin:r(i).vmax, r(i).umin:r(i).umax);
+            p = [r(i).uc r(i).vc];
+            q = homtrans(H,p');
+            fprintf('%s red %s ID %d is at %dmm %dmm\n', s, shape, i, q(1), q(2));
+        elseif(s==res(2,1) && color==res(2,2) && shape==res(2,3))
+            r(i).plot('r*');
+            r(i).plot_box('r');
+            maybe(r(i).vmin:r(i).vmax, r(i).umin:r(i).umax) = imrThings(r(i).vmin:r(i).vmax, r(i).umin:r(i).umax);
+            p = [r(i).uc r(i).vc];
+            q = homtrans(H,p');
+            fprintf('%s red %s ID %d is at %dmm %dmm\n', s, shape, i, q(1), q(2));
+        elseif(s==res(3,1) && color==res(3,2) && shape==res(3,3))
+            r(i).plot('r*');
+            r(i).plot_box('r');
+            maybe(r(i).vmin:r(i).vmax, r(i).umin:r(i).umax) = imrThings(r(i).vmin:r(i).vmax, r(i).umin:r(i).umax);
+            p = [r(i).uc r(i).vc];
+            q = homtrans(H,p');
+            fprintf('%s red %s ID %d is at %dmm %dmm\n', s, shape, i, q(1), q(2));
+        else
+            
+        end
+    elseif r(i).circularity > 0.7
+        if r(i).area > 65000
+            s="large";
+        else
+            s="small";
+        end
+        shape="Square";
+        if(s==res(1,1) && color==res(1,2) && shape==res(1,3))
+            r(i).plot('r*');
+            r(i).plot_box('r');
+            maybe(r(i).vmin:r(i).vmax, r(i).umin:r(i).umax) = imrThings(r(i).vmin:r(i).vmax, r(i).umin:r(i).umax);
+            p = [r(i).uc r(i).vc];
+            q = homtrans(H,p');
+            fprintf('%s red %s ID %d is at %dmm %dmm\n', s, shape, i, q(1), q(2));
+        elseif(s==res(2,1) && color==res(2,2) && shape==res(2,3))
+            r(i).plot('r*');
+            r(i).plot_box('r');
+            maybe(r(i).vmin:r(i).vmax, r(i).umin:r(i).umax) = imrThings(r(i).vmin:r(i).vmax, r(i).umin:r(i).umax);
+            p = [r(i).uc r(i).vc];
+            q = homtrans(H,p');
+            fprintf('%s red %s ID %d is at %dmm %dmm\n', s, shape, i, q(1), q(2));
+        elseif(s==res(3,1) && color==res(3,2) && shape==res(3,3))
+            r(i).plot('r*');
+            r(i).plot_box('r');
+            maybe(r(i).vmin:r(i).vmax, r(i).umin:r(i).umax) = imrThings(r(i).vmin:r(i).vmax, r(i).umin:r(i).umax);
+            p = [r(i).uc r(i).vc];
+            q = homtrans(H,p');
+            fprintf('%s red %s ID %d is at %dmm %dmm\n', s, shape, i, q(1), q(2));
+        else
+            
+        end
+    elseif r(i).circularity > 0.55
+        if r(i).area > 65000
+            s="large";
+        else
+            s="small";
+        end
+        shape="Triangle";
+        if(s==res(1,1) && color==res(1,2) && shape==res(1,3))
+            r(i).plot('r*');
+            r(i).plot_box('r');
+            maybe(r(i).vmin:r(i).vmax, r(i).umin:r(i).umax) = imrThings(r(i).vmin:r(i).vmax, r(i).umin:r(i).umax);
+            p = [r(i).uc r(i).vc];
+            q = homtrans(H,p');
+            fprintf('%s red %s ID %d is at %dmm %dmm\n', s, shape, i, q(1), q(2));
+        elseif(s==res(2,1) && color==res(2,2) && shape==res(2,3))
+            r(i).plot('r*');
+            r(i).plot_box('r');
+            maybe(r(i).vmin:r(i).vmax, r(i).umin:r(i).umax) = imrThings(r(i).vmin:r(i).vmax, r(i).umin:r(i).umax);
+            p = [r(i).uc r(i).vc];
+            q = homtrans(H,p');
+            fprintf('%s red %s ID %d is at %dmm %dmm\n', s, shape, i, q(1), q(2));
+        elseif(s==res(3,1) && color==res(3,2) && shape==res(3,3))
+            r(i).plot('r*');
+            r(i).plot_box('r');
+            maybe(r(i).vmin:r(i).vmax, r(i).umin:r(i).umax) = imrThings(r(i).vmin:r(i).vmax, r(i).umin:r(i).umax);
+            p = [r(i).uc r(i).vc];
+            q = homtrans(H,p');
+            fprintf('%s red %s ID %d is at %dmm %dmm\n', s, shape, i, q(1), q(2));
+        else
+            
+        end
+    else
+        fprintf('Red shape ID %d is of an unknown type\n', i);
+    end
+end
+
+for i=1:length(g)
+    s="small";
+    color="Green";
+    if g(i).circularity > 0.9
+        if g(i).area > 65000
+            s="large";
+        else
+            s="small";
+        end
+        shape="Circle";
+        if(s==res(1,1) && color==res(1,2) && shape==res(1,3))
+            g(i).plot('g*');
+            g(i).plot_box('g');
+            maybe(g(i).vmin:g(i).vmax, g(i).umin:g(i).umax) = imgThings(g(i).vmin:g(i).vmax, g(i).umin:g(i).umax);
+            p = [g(i).uc g(i).vc];
+            q = homtrans(H,p');
+            fprintf('%s green %s ID %d is at %dmm %dmm\n', s, shape, i, q(1), q(2));
+        elseif(s==res(2,1) && color==res(2,2) && shape==res(2,3))
+            g(i).plot('g*');
+            g(i).plot_box('g');
+            maybe(g(i).vmin:g(i).vmax, g(i).umin:g(i).umax) = imgThings(g(i).vmin:g(i).vmax, g(i).umin:g(i).umax);
+            p = [g(i).uc g(i).vc];
+            q = homtrans(H,p');
+            fprintf('%s green %s ID %d is at %dmm %dmm\n', s, shape, i, q(1), q(2));
+        elseif(s==res(3,1) && color==res(3,2) && shape==res(3,3))
+            g(i).plot('g*');
+            g(i).plot_box('g');
+            maybe(g(i).vmin:g(i).vmax, g(i).umin:g(i).umax) = imgThings(g(i).vmin:g(i).vmax, g(i).umin:g(i).umax);
+            p = [g(i).uc g(i).vc];
+            q = homtrans(H,p');
+            fprintf('%s green %s ID %d is at %dmm %dmm\n', s, shape, i, q(1), q(2));
+        else
+            
+        end
+    elseif g(i).circularity > 0.7
+        if g(i).area > 65000
+            s="large";
+        else
+            s="small";
+        end
+        shape="Square";
+        if(s==res(1,1) && color==res(1,2) && shape==res(1,3))
+            g(i).plot('g*');
+            g(i).plot_box('g');
+            maybe(g(i).vmin:g(i).vmax, g(i).umin:g(i).umax) = imgThings(g(i).vmin:g(i).vmax, g(i).umin:g(i).umax);
+            p = [g(i).uc g(i).vc];
+            q = homtrans(H,p');
+            fprintf('%s green %s ID %d is at %dmm %dmm\n', s, shape, i, q(1), q(2));
+        elseif(s==res(2,1) && color==res(2,2) && shape==res(2,3))
+            g(i).plot('g*');
+            g(i).plot_box('g');
+            maybe(g(i).vmin:g(i).vmax, g(i).umin:g(i).umax) = imgThings(g(i).vmin:g(i).vmax, g(i).umin:g(i).umax);
+            p = [g(i).uc g(i).vc];
+            q = homtrans(H,p');
+            fprintf('%s green %s ID %d is at %dmm %dmm\n', s, shape, i, q(1), q(2));
+        elseif(s==res(3,1) && color==res(3,2) && shape==res(3,3))
+            g(i).plot('g*');
+            g(i).plot_box('g');
+            maybe(g(i).vmin:g(i).vmax, g(i).umin:g(i).umax) = imgThings(g(i).vmin:g(i).vmax, g(i).umin:g(i).umax);
+            p = [g(i).uc g(i).vc];
+            q = homtrans(H,p');
+            fprintf('%s green %s ID %d is at %dmm %dmm\n', s, shape, i, q(1), q(2));
+        else
+            
+        end
+    elseif g(i).circularity > 0.55
+        if g(i).area > 65000
+            s="large";
+        else
+            s="small";        
+        end
+        shape="Triangle";
+        if(s==res(1,1) && color==res(1,2) && shape==res(1,3))
+            g(i).plot('g*');
+            g(i).plot_box('g');
+            maybe(g(i).vmin:g(i).vmax, g(i).umin:g(i).umax) = imgThings(g(i).vmin:g(i).vmax, g(i).umin:g(i).umax);
+            p = [g(i).uc g(i).vc];
+            q = homtrans(H,p');
+            fprintf('%s green %s ID %d is at %dmm %dmm\n', s, shape, i, q(1), q(2));
+        elseif(s==res(2,1) && color==res(2,2) && shape==res(2,3))
+            g(i).plot('g*');
+            g(i).plot_box('g');
+            maybe(g(i).vmin:g(i).vmax, g(i).umin:g(i).umax) = imgThings(g(i).vmin:g(i).vmax, g(i).umin:g(i).umax);
+            p = [g(i).uc g(i).vc];
+            q = homtrans(H,p');
+            fprintf('%s green %s ID %d is at %dmm %dmm\n', s, shape, i, q(1), q(2));
+        elseif(s==res(3,1) && color==res(3,2) && shape==res(3,3))
+            g(i).plot('g*');
+            g(i).plot_box('g');
+            maybe(g(i).vmin:g(i).vmax, g(i).umin:g(i).umax) = imgThings(g(i).vmin:g(i).vmax, g(i).umin:g(i).umax);
+            p = [g(i).uc g(i).vc];
+            q = homtrans(H,p');
+            fprintf('%s green %s ID %d is at %dmm %dmm\n', s, shape, i, q(1), q(2));
+        else
+            
+        end
+    else
+        fprintf('Green shape ID %d is of an unknown type\n', i);
+    end
+end
+
+%display shapes from testsheet on worksheet
+figure()
+idisp(maybe);
